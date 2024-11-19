@@ -1,0 +1,3 @@
+Dupa ce am ajuns acasa am incercat sa ma joc si cu alt mod de antrenare (in loc sa filtreze am ales doar sa iau cele mai bune k predictii la bbox si logits -unde k reprezinta ground truth-
+
+Cealalta filtrare a ramas la fel 
