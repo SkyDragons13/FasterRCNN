@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Inference</title>
+    <script>
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                document.getElementById('imageInput').files = event.target.files;
+
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    const img = new Image();
+                    img.onload = function () {
+                        const canvas = document.getElementById('imageCanvas');
+                        const ctx = canvas.getContext('2d');
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+                        ctx.drawImage(img, 0, 0);
+                    };
+                    img.src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+
+                // Show the modal for image name
+                document.getElementById('nameModal').classList.remove('hidden');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('nameModal').classList.add('hidden');
+        }
+
+        function submitImage() {
+            document.getElementById('imageNameInput').value = document.getElementById('imageNameModalField').value;
+            document.getElementById('uploadForm').submit();
+        }
+    </script>
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mx-auto p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-6">Run Inference</h1>
+
+        <div class="w-full">
+            <canvas id="imageCanvas" class="border border-gray-400 rounded  max-h-[600px] w-full h-auto"></canvas>
+            <div class="mt-4">
+                <label class="block w-full bg-indigo-600 text-white text-center py-2 rounded cursor-pointer hover:bg-indigo-700">
+                    Load Image
+                    <input type="file" accept="image/*" onchange="handleFileUpload(event)" class="hidden"/>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Upload Form -->
+    <form id="uploadForm" th:action="@{/inference/upload}" method="post" enctype="multipart/form-data" class="hidden">
+        <input id="imageInput" type="file" name="file"/>
+        <input id="imageNameInput" type="text" name="name"/>
+    </form>
+
+    <!-- Modal for Entering Image Name -->
+    <div id="nameModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white p-6 rounded shadow-lg w-full max-w-sm">
+            <h2 class="text-xl font-semibold mb-4">Enter Image Name</h2>
+            <input type="text" id="imageNameModalField" placeholder="Image name"
+                   class="w-full border px-3 py-2 rounded mb-4"/>
+            <div class="flex justify-end space-x-2">
+                <button onclick="closeModal()"
+                        class="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400">Cancel
+                </button>
+                <button onclick="submitImage()"
+                        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Run Inference
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

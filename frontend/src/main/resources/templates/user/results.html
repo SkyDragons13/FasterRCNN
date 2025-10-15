@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout}">
+<head>
+    <meta charset="UTF-8">
+    <title>Inference Results</title>
+    <script>
+        function magnify(imgID, zoom) {
+            const img = document.getElementById(imgID);
+
+            img.addEventListener("mouseenter", function onMouseEnter(e) {
+                const glass = document.createElement("DIV");
+                glass.setAttribute("class", "img-magnifier-glass");
+
+                // Style the magnifier glass
+                Object.assign(glass.style, {
+                    position: "absolute",
+                    border: "3px solid #000",
+                    borderRadius: "25%",
+                    cursor: "none",
+                    width: "150px",
+                    height: "150px",
+                    zIndex: "1000",
+                    backgroundRepeat: "no-repeat",
+                    pointerEvents: "none",
+                    backgroundImage: `url('${img.src}')`,
+                    backgroundSize: `${img.width * zoom}px ${img.height * zoom}px`
+                });
+
+                document.body.appendChild(glass);
+
+                const w = glass.offsetWidth / 2;
+                const h = glass.offsetHeight / 2;
+
+                function moveMagnifier(e) {
+                    const pos = getCursorPos(e);
+                    let x = pos.x;
+                    let y = pos.y;
+
+                    const a = img.getBoundingClientRect();
+                    const w = glass.offsetWidth / 2;
+                    const h = glass.offsetHeight / 2;
+
+                    if (x > img.width - (w / zoom)) x = img.width - (w / zoom);
+                    if (x < w / zoom) x = w / zoom;
+                    if (y > img.height - (h / zoom)) y = img.height - (h / zoom);
+                    if (y < h / zoom) y = h / zoom;
+
+                    // Move magnifier to cursor position
+                    glass.style.left = (e.pageX - w) + "px";
+                    glass.style.top = (e.pageY - h) + "px";
+
+                    // Move background of magnifier relative to zoomed image
+                    glass.style.backgroundPosition = `-${x * zoom - w}px -${y * zoom - h}px`;
+                }
+
+                function getCursorPos(e) {
+                    const a = img.getBoundingClientRect();
+                    const x = e.clientX - a.left ;
+                    const y = e.clientY - a.top  ;
+                    return { x: x, y: y };
+                }
+
+                img.addEventListener("mousemove", moveMagnifier);
+                glass.addEventListener("mousemove", moveMagnifier);
+
+                img.addEventListener("mouseleave", function onMouseLeave() {
+                    glass.remove();
+                    img.removeEventListener("mousemove", moveMagnifier);
+                    img.removeEventListener("mouseleave", onMouseLeave);
+                });
+
+                moveMagnifier(e); // Initialize position immediately under the cursor
+            });
+        }
+
+        window.addEventListener("DOMContentLoaded", () => {
+            magnify("original", 2);
+            magnify("annotated", 2);
+        });
+    </script>
+
+
+
+</head>
+<body>
+<div layout:fragment="content">
+    <div class="container mx-auto p-8">
+        <h1 class="text-3xl font-bold text-gray-800 mb-8">Inference Results</h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Original Image -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Original Image</h2>
+                <img id="original" th:src="@{/results/image/{id}(id=${originalImageId})}" alt="Original"
+                     class="w-full border border-gray-300 rounded shadow" onload="magnify('original', 2)">
+            </div>
+
+            <!-- Annotated Image -->
+            <div>
+                <h2 class="text-xl font-semibold text-gray-700 mb-4">Annotated Image</h2>
+                <img id="annotated" th:src="@{/results/annotated_image/{id}(id=${annotatedImageId})}" alt="Annotated"
+                     class="w-full border border-gray-300 rounded shadow" onload="magnify('annotated', 2)">
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
